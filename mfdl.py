@@ -37,7 +37,13 @@ def get_chapter_urls(manga_name):
         chapters.append(link['href'])
     if(len(links) == 0):
         print "Warning: Manga either unable to be found, or no chapters - please check the url above";
-    return list(set(chapters)) # ugly yo-yo code to remove duplicates
+    clean_chapters = []
+    for chapter in chapters:
+        # make any urls end with /, so if the url return ends with /001.html cut that part off
+        l = chapter.split('/')
+        l.pop()
+        clean_chapters.append('/'.join(l) + '/')
+    return list(set(clean_chapters)) # ugly yo-yo code to remove duplicates
 
 
 def get_page_numbers(soup):
@@ -46,7 +52,8 @@ def get_page_numbers(soup):
     raw_options = raw.findAll('option')
     pages = []
     for html in raw_options:
-        pages.append(html['value'])
+        if html['value'] != '0':
+            pages.append(html['value'])
     return pages
 
 
@@ -60,7 +67,7 @@ def get_chapter_image_urls(chapter_url):
     for page in pages:
         print "url_fragment: {0}".format(chapter_url)
         print "page: {0}".format(page)
-        print "Getting image url from {0}/{1}.html".format(chapter_url, page)
+        print "Getting image url from {0}{1}.html".format(chapter_url, page)
         page_soup = get_page_soup(chapter_url + page + ".html")
         images = page_soup.findAll('img', {'id': 'image'})
         image_urls.append(images[0]['src'])
